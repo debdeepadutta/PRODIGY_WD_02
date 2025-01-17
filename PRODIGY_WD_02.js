@@ -1,78 +1,77 @@
-let boxes = document.querySelectorAll(".box");
-let resetBtn = document.querySelector("#reset-btn");
-let newGameBtn = document.querySelector("#new-btn");
-let msgContainer = document.querySelector(".msg-container");
-let msg = document.querySelector("#msg");
-let turnO = true; //playerX, playerO
-let count = 0; //To Track Draw
-const winPatterns = [
-  [0, 1, 2],
-  [0, 3, 6],
-  [0, 4, 8],
-  [1, 4, 7],
-  [2, 5, 8],
-  [2, 4, 6],
-  [3, 4, 5],
-  [6, 7, 8],
-];
-const resetGame = () => {
-  turnO = true;
-  count = 0;
-  enableBoxes();
-  msgContainer.classList.add("hide");
-};
-boxes.forEach((box) => {
-  box.addEventListener("click", () => {
-    if (turnO) {
-      //playerO
-      box.innerText = "O";
-      turnO = false;
-    } else {
-      //playerX
-      box.innerText = "X";
-      turnO = true;
+// script.js
+
+// Stopwatch Variables
+let milliseconds = 0;
+let seconds = 0;
+let minutes = 0;
+let interval;
+let isRunning = false;
+
+// DOM Elements
+const minutesDisplay = document.getElementById("minutes");
+const secondsDisplay = document.getElementById("seconds");
+const millisecondsDisplay = document.getElementById("milliseconds");
+const lapList = document.getElementById("lap-list");
+
+// Start Stopwatch
+document.getElementById("start-btn").addEventListener("click", () => {
+    if (!isRunning) {
+        isRunning = true;
+        interval = setInterval(updateTime, 10);
     }
-    box.disabled = true;
-    count++;
-    let isWinner = checkWinner();
-    if (count === 9 && !isWinner) {
-      gameDraw();
-    }
-  });
 });
-const gameDraw = () => {
-  msg.innerText = `Game was a Draw.`;
-  msgContainer.classList.remove("hide");
-  disableBoxes();
-};
-const disableBoxes = () => {
-  for (let box of boxes) {
-    box.disabled = true;
-  }
-};
-const enableBoxes = () => {
-  for (let box of boxes) {
-    box.disabled = false;
-    box.innerText = "";
-  }
-};
-const showWinner = (winner) => {
-  msg.innerText = `Congratulations, Winner is ${winner}`;
-  msgContainer.classList.remove("hide");
-  disableBoxes();
-};
-const checkWinner = () => {
-  for (let pattern of winPatterns) {
-    let pos1Val = boxes[pattern[0]].innerText;
-    let pos2Val = boxes[pattern[1]].innerText;
-    let pos3Val = boxes[pattern[2]].innerText;
-    if (pos1Val != "" && pos2Val != "" && pos3Val != "") {
-      if (pos1Val === pos2Val && pos2Val === pos3Val) {
-        showWinner(pos1Val);
-        return true;
-      }
+
+// Pause Stopwatch
+document.getElementById("pause-btn").addEventListener("click", () => {
+    isRunning = false;
+    clearInterval(interval);
+});
+
+// Reset Stopwatch
+document.getElementById("reset-btn").addEventListener("click", () => {
+    isRunning = false;
+    clearInterval(interval);
+    milliseconds = seconds = minutes = 0;
+    updateDisplay();
+    lapList.innerHTML = ""; // Clear lap times
+});
+
+// Add Lap
+document.getElementById("lap-btn").addEventListener("click", () => {
+    if (isRunning) {
+        const lapTime = `${formatTime(minutes)}:${formatTime(seconds)}:${formatMilliseconds(milliseconds)}`;
+        const lapItem = document.createElement("li");
+        lapItem.textContent = lapTime;
+        lapList.appendChild(lapItem);
     }
-  }
-};
-newGameBtn.addEventListener("click", resetGame);
-resetBtn.addEventListener("click", resetGame);
+});
+
+// Update Time
+function updateTime() {
+    milliseconds += 1;
+    if (milliseconds === 100) {
+        milliseconds = 0;
+        seconds += 1;
+    }
+    if (seconds === 60) {
+        seconds = 0;
+        minutes += 1;
+    }
+    updateDisplay();
+}
+
+// Update Stopwatch Display
+function updateDisplay() {
+    minutesDisplay.textContent = formatTime(minutes);
+    secondsDisplay.textContent = formatTime(seconds);
+    millisecondsDisplay.textContent = formatMilliseconds(milliseconds);
+}
+
+// Format Time for Display
+function formatTime(time) {
+    return time < 10 ? `0${time}` : time;
+}
+
+function formatMilliseconds(ms) {
+    return ms < 10 ? `0${ms}` : ms;
+}
